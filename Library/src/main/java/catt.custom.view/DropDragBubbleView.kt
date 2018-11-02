@@ -115,9 +115,9 @@ class DropDragBubbleView
 //           interpolator =  AnticipateOvershootInterpolator(2f, 3F)
            addListener(object: AnimatorListenerAdapter(){
                override fun onAnimationEnd(animation: Animator?) {
-                   bindView?.apply {
+                   bindView?.apply bindView@{
                        if (visibility != View.VISIBLE) visibility = View.VISIBLE
-                       listener?.onSpringBack(this@apply)
+                       listener?.onSpringBack(this@bindView)
                    }
                    postDelayed({
                        clearPoint()
