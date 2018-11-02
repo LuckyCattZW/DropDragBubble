@@ -6,7 +6,7 @@
 
 #### Usage
 ```kotlin
-        DropDragBubbleView.attach(button, object : OnDropDragBubbleListener {
+        DropDragBubbleView.attach(/*You attach view*/button, object : OnDropDragBubbleListener {
             override fun onDismiss(view: View) {
                //Do something
             }
