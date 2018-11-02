@@ -127,7 +127,7 @@ class DropDragBubbleView
                    if(whetherAttachWindow) {
                        postDelayed({
                            bindWindowManager?.removeView(this@DropDragBubbleView)
-                           clearPoint()
+                           restore()
                        }, 64L)
                    }
                }
@@ -136,12 +136,12 @@ class DropDragBubbleView
        springBackAnimator?.start()
     }
 
-    private fun clearPoint(){
+    private fun restore(){
+        whetherAttachWindow = false
         dragPoint.x = -1F
         dragPoint.y = -1F
         fixationPoint.x = -1F
         fixationPoint.y = -1F
-        whetherAttachWindow = false
     }
 
     fun stopPoint(){
@@ -155,7 +155,7 @@ class DropDragBubbleView
             if(whetherAttachWindow){
                 postDelayed({
                     bindWindowManager?.removeView(this@DropDragBubbleView)
-                    clearPoint()
+                    restore()
                 }, 64L)
             }
         }
