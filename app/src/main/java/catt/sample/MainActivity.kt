@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import catt.custom.view.DropDragBubbleView
-import catt.custom.view.OnDropDragBubbleListener
+import catt.custom.view.SimpleDropDragBubbleListener
 import es.dmoral.toasty.Toasty
 import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.activity_main.*
@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        DropDragBubbleView.attach(button, object : OnDropDragBubbleListener {
+        DropDragBubbleView.attach(button, object : SimpleDropDragBubbleListener() {
             override fun onDismiss(view: View) {
                 Log.e(_TAG, "onDismiss: ")
                 Toasty.warning(applicationContext, "Dismiss Button.", Toast.LENGTH_SHORT, false).show()
@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        DropDragBubbleView.attach(image_view, object : OnDropDragBubbleListener {
+        DropDragBubbleView.attach(image_view, object : SimpleDropDragBubbleListener() {
             override fun onDismiss(view: View) {
                 Log.e(_TAG, "onDismiss: ")
                 Toasty.warning(applicationContext, "Dismiss ImageView.", Toast.LENGTH_SHORT, false).show()
