@@ -10,6 +10,7 @@ import android.graphics.PointF
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.view.WindowManager
+import android.view.animation.LinearInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.annotation.FloatRange
 
@@ -45,6 +46,10 @@ class DropDragBubbleView
 
     private val whetherOutRange : Boolean
         get() = fixationRadius < minFixationRadius
+
+    private var springBackAnimator : ValueAnimator? = null
+
+    private var whetherAttachWindow: Boolean = false
 
     /**
      * 拖动阻力
@@ -104,7 +109,7 @@ class DropDragBubbleView
        val endY = fixationPoint.y
        val diffX = endX - startX
        val diffY = endY - startY
-       ValueAnimator.ofFloat(1F).apply {
+       springBackAnimator = ValueAnimator.ofFloat(1F).apply {
            addUpdateListener {
                dragPoint.x = startX + diffX * it.animatedFraction
                dragPoint.y = startY + diffY * it.animatedFraction
@@ -112,20 +117,23 @@ class DropDragBubbleView
            }
            duration = 350L
            interpolator =  OvershootInterpolator(3F)
-//           interpolator =  AnticipateOvershootInterpolator(2f, 3F)
            addListener(object: AnimatorListenerAdapter(){
                override fun onAnimationEnd(animation: Animator?) {
                    bindView?.apply bindView@{
+                       alpha = 1F
                        if (visibility != View.VISIBLE) visibility = View.VISIBLE
                        listener?.onSpringBack(this@bindView)
                    }
-                   postDelayed({
-                       clearPoint()
-                       bindWindowManager?.removeView(this@DropDragBubbleView)
-                   }, 32L)
+                   if(whetherAttachWindow) {
+                       postDelayed({
+                           bindWindowManager?.removeView(this@DropDragBubbleView)
+                           clearPoint()
+                       }, 64L)
+                   }
                }
            })
-       }.start()
+       }
+       springBackAnimator?.start()
     }
 
     private fun clearPoint(){
@@ -133,6 +141,7 @@ class DropDragBubbleView
         dragPoint.y = -1F
         fixationPoint.x = -1F
         fixationPoint.y = -1F
+        whetherAttachWindow = false
     }
 
     fun stopPoint(){
@@ -143,30 +152,50 @@ class DropDragBubbleView
                 if (visibility != View.INVISIBLE) visibility = View.INVISIBLE
                 listener?.onDismiss(this@apply)
             }
-            postDelayed({
-                clearPoint()
-                bindWindowManager?.removeView(this@DropDragBubbleView)
-            }, 32L)
+            if(whetherAttachWindow){
+                postDelayed({
+                    bindWindowManager?.removeView(this@DropDragBubbleView)
+                    clearPoint()
+                }, 64L)
+            }
         }
     }
 
     fun initPoint(downX: Float, downY: Float) {
         if (dragPoint.x != -1F || dragPoint.y != -1F) return
+        springBackAnimator?.end()
+        bindWindowManager?.addView(this@DropDragBubbleView, bindWindowParams)
+        whetherAttachWindow = true
+        loadingBingViewAnimator()
         dragPoint.x = downX
         dragPoint.y = downY
         fixationPoint.x = downX
         fixationPoint.y = downY
-        bindWindowManager?.addView(this@DropDragBubbleView, bindWindowParams)
         invalidate()
-        postDelayed({ if (bindView?.visibility != View.INVISIBLE) bindView?.visibility = View.INVISIBLE }, 32L)
     }
 
     fun updatePoint(moveX : Float, moveY : Float){
         if(fixationPoint.x == -1F || fixationPoint.y == -1F) return
+        bindView?.alpha = 0F
         dragPoint.x = moveX
         dragPoint.y = moveY
         fixationRadius = getDistance(dragPoint, fixationPoint).toFloat()
         invalidate()
+    }
+
+    private fun loadingBingViewAnimator() {
+       ValueAnimator.ofFloat(1F).apply {
+            duration = 250L
+            interpolator = LinearInterpolator()
+            addUpdateListener {
+                bindView?.alpha = 1 - it.animatedFraction
+            }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    if (bindView?.visibility != View.INVISIBLE) bindView?.visibility = View.INVISIBLE
+                }
+            })
+        }.start()
     }
 
     private fun createBezierPath(path: Path){
